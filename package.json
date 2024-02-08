@@ -11,7 +11,7 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint \"src/**/*.ts\" --fix",
     "test": "jest --silent",
-    "test:verbose": "jest ./04-test-class",
+    "test:verbose": "jest ./05-partial-mocking",
     "build": "tsc"
   },
   "devDependencies": {
