@@ -8,8 +8,14 @@ const baseUrl = 'https://jsonplaceholder.typicode.com';
 const createConfig = {
   baseURL: baseUrl,
 };
+const mockedReturnData = 'Returned data';
 jest.mock('axios');
 const mockedAxios = jest.mocked(axios);
+let mockedGet: jest.Mock<
+  () => Promise<{
+    data: string;
+  }>
+>;
 
 describe('throttledGetDataFromApi', () => {
   beforeAll(() => {
@@ -21,7 +27,13 @@ describe('throttledGetDataFromApi', () => {
   });
 
   beforeEach(() => {
-    //   jest.spyOn(axios, 'create');
+    mockedGet = jest.fn(() => Promise.resolve({ data: mockedReturnData }));
+    (mockedAxios.create as jest.Mock).mockImplementation((baseURL) => {
+      return {
+        baseURL: baseURL,
+        get: mockedGet,
+      };
+    });
   });
 
   afterEach(() => {
@@ -31,37 +43,23 @@ describe('throttledGetDataFromApi', () => {
   });
 
   test('should create instance with provided base url', async () => {
-    // Write your test here
-    const mockedGet = jest.fn(() => Promise.resolve({ data: 'Returned data' }));
-    (mockedAxios.create as jest.Mock).mockImplementation((baseURL) => {
-      return {
-        baseURL: baseURL,
-        get: mockedGet,
-      };
-    });
     await throttledGetDataFromApi(relativePath);
-    jest.clearAllTimers();
+    jest.runAllTimers();
     expect(mockedAxios.create).toHaveBeenCalled();
     expect(mockedAxios.create).toHaveBeenLastCalledWith(createConfig);
   });
 
   test('should perform request to correct provided url', async () => {
-    // Write your test here
-    // jest.mock('axios');
-    // const mockedAxios = jest.mocked(axios);
-    const mockedGet = jest.fn(() => Promise.resolve({ data: 'Returned data' }));
-    (mockedAxios.create as jest.Mock).mockImplementation((baseURL) => {
-      return {
-        baseURL: baseURL,
-        get: mockedGet,
-      };
-    });
     await throttledGetDataFromApi(relativePath);
-    jest.clearAllTimers();
+    jest.runAllTimers();
     expect(mockedGet).toHaveBeenCalled();
+    expect(mockedGet).toHaveBeenCalledWith(relativePath);
   });
 
   test('should return response data', async () => {
     // Write your test here
+    const returnedData = await throttledGetDataFromApi(relativePath);
+    jest.runAllTimers();
+    expect(returnedData).toBe(mockedReturnData);
   });
 });
